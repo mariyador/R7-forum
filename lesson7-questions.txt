@@ -4,7 +4,7 @@ Questions for Lesson 7
 before some or all of the controller actions execute?  Where can you put that
 change so that it affects all controllers?
 
-
+Callback Method. To apply it to all controllers, I need to put it in ApplicationController.
 
 2. Consider the following statement:
 
@@ -14,13 +14,17 @@ This creates several files, including two you need to know about.  What are they
 After you do this statement but before starting the rails server, you have to do another
 command.  What is that command?
 
-
+The command creates a migration file and a model file. 
+After generating the model, I need to run bin/rails db:migrate to apply the migration.
 
 3. What table is created as a result of the migration described above? What are the column
 names in that table? What is the primary key? What are the foreign keys?  What does a 
 foreign key do?
 
-
+A table named subscriptions is created. 
+The columns are forum_id, user_id, and priority. 
+The primary key is id, and the foreign keys are forum_id and user_id. 
+Foreign keys link rows between tables.
 
 4. You have the following lines in the Subscription model:
 
@@ -32,7 +36,8 @@ that if you have a @subscription (an instance of Subscription), you have a coupl
 used to refer to associated database methods.  What are those methods?  (Actually there are a few,
 but there are two in particular you should know.)
 
-
+For belongs_to :user and belongs_to :forum, 
+the methods user and forum are available to access associated records.
 
 5. You have the following lines in the User model.
 
@@ -43,7 +48,8 @@ has_many :forums, through: :subscriptions
 What are threee important methods that are available to instances of the user model because
 of these lines?
 
-
+For has_many :subscriptions, has_many :posts, and has_many :forums, through: :subscriptions, 
+I get subscriptions, posts, and forums methods.
 
 6. Suppose that user is an instance of the User class. What kind of object is returned by
 user.subcriptions?  Hint: To find out, go into the Rails console for your application.
@@ -52,6 +58,8 @@ Then do:
 user=User.first
 subscriptions = user.subscriptions
 subscriptions.class
+
+user.subscriptions returns an ActiveRecord::Associations::CollectionProxy. 
 
 The second call returns what looks like an empty array -- but it isn't
 of the Array class. This is important, because you can do, for 
@@ -67,6 +75,7 @@ Try that last line.  You will see that it creates a subscription object, but tha
 object is not entirely empty.  Which attribute is set? Where does it get that
 value?
 
+When calling user.subscriptions.new, the user_id attribute is set automatically based on the user instance.
 
 
 7. Suppose that user is an instance of User, and forum is an instance of Forum.  What
@@ -74,7 +83,8 @@ Active Record Statement could you use to retrieve all the user's posts for that
 forum?  Hint: You need to have a where in your statement. Try this out in the console.
 You will see the SQL that is executed logged to the screen.  What is that SQL?
 
-
+Use user.posts.where(forum: forum). 
+he SQL executed will be something like SELECT "posts".* FROM "posts" WHERE "posts"."forum_id" = ? AND "posts"."user_id" = ?.
 
 8. You have the following method in your posts controller:
 
@@ -87,6 +97,8 @@ You will see the SQL that is executed logged to the screen.  What is that SQL?
 There is a security exposure, a risk that a hacker could do damage.  What is that
 risk? What two things are done in your code to prevent the risk?
 
+The risk is that anyone could delete a post without proper authorization. 
+To prevent this, ensure that the @post is owned by the current user and check if the user has permission to delete the post.
 
 
 9. The routes for subscriptions are nested under the forum routes.  How does this
@@ -94,12 +106,15 @@ change the routes?  What is the additional hash key and value that is passed in 
 params hash to the subscriptions controller as a result of this nesting? Which routes
 are unaffected by the nesting?
 
-
+The route path changes to include the forum, e.g., /forums/:forum_id/subscriptions. 
+An additional key :forum_id is passed in params. 
+Routes like new_subscription_path and edit_subscription_path are affected; others are not.
 
 
 10. Every action method must do exactly one of two things -- that is, each
 method may do all sorts of logic, but at the end, it has to do one of two
 things, depending on the outcome of the logic.  What are those two things?
 
-
+Each method must either render a view (with render or redirect_to) or 
+redirect to another action (with redirect_to).
 
